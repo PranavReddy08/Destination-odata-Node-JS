@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sales Header Data</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        th {
+            background-color: #333;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Sales Header - OData from SAP</h2>
+    <button onclick="loadData()">Load Sales Data</button>
+
+    <table id="salesTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>VBELN</th>
+                <th>ERDAT</th>
+                <th>ERNAM</th>
+                <th>NETWR</th>
+                <th>WAERK</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <script>
+        function loadData() {
+            fetch(window.location.origin + "/sales")
+                .then(response => response.json())
+                .then(data => {
+                    const results = data.d?.results || [];
+                    const tableBody = document.getElementById("tableBody");
+                    const table = document.getElementById("salesTable");
+
+                    tableBody.innerHTML = ""; // Clear old rows
+
+                    results.forEach(item => {
+                        const row = `
+                            <tr>
+                                <td>${item.Vbeln}</td>
+                                <td>${formatSapDate(item.Erdat)}</td>
+                                <td>${item.Ernam}</td>
+                                <td>${item.Netwr}</td>
+                                <td>${item.Waerk}</td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+
+                    table.style.display = "table";
+                })
+                .catch(err => {
+                    alert("Error loading data: " + err);
+                });
+        }
+
+        // Convert /Date(1760400000000)/ to readable date
+        function formatSapDate(sapDate) {
+            if (!sapDate) return "";
+
+            const timestamp = parseInt(sapDate.replace(/[^0-9]/g, ""));
+            const date = new Date(timestamp);
+
+            return date.toISOString().split("T")[0]; // YYYY-MM-DD
+        }
+    </script>
+
+</body>
+</html>
